@@ -54,21 +54,6 @@ const useFetch = (baseUrl) => {
   //   }).then((response) => response.json());
   // };
 
-  //   const extractDataFromApi = (endpoint, payload, method) => {
-  //     switch (method.toLowerCase()) {
-  //       case "get":
-  //         return _get(endpoint);
-  //       case "post":
-  //         return _post(endpoint, payload);
-  //       case "put":
-  //         return _put(endpoint, payload);
-  //       case "delete":
-  //         return _delete(endpoint);
-  //       default:
-  //         throw new Error(`Illegal method ${method}`);
-  //     }
-  //   };
-
   //   const _request = ()
   return { _get, _post, _put, _delete };
 };

@@ -27,43 +27,36 @@ function Home() {
   //  track how many times Add Button is clicked
   const [attrCounter, setAttrCounter] = useState(0);
 
-  // const [selectArray, setSelectArray] = useState([]);
-
-  // const handleSelectChange = useCallback((value) => setSelected(value), []);
-
-  // let options = [
-  // { label: "Today", value: "today" },
-  // { label: "Yesterday", value: "yesterday" },
-  // { label: "Last 7 days", value: "lastWeek" },
-  // ];
-
   const { _post } = useFetch(
     "https://multi-account.sellernext.com/home/public/connector/profile/"
   );
 
   useEffect(() => {
     // debugger;
-    setIsLoading(true);
-    if (showAttrs) {
-      _post("getCategoryAttributes", {
-        target_marketplace: "eyJtYXJrZXRwbGFjZSI6ImFsbCIsInNob3BfaWQiOm51bGx9",
-        data: {
-          barcode_exemption: false,
-          browser_node_id: "1380072031",
-          category: attr.category?.["primary-category"],
-          sub_category: attr.category?.["sub-category"],
-        },
-        user_id: "63329d7f0451c074aa0e15a8",
-        target: {
-          marketplace: "amazon",
-          shopId: "530",
-        },
-        source: {
-          marketplace: "shopify",
-          shopId: "500",
-        },
-      })
-        .then((response) => {
+    (async () => {
+      setIsLoading(true);
+      if (showAttrs) {
+        try {
+          const response = await _post("getCategoryAttributes", {
+            target_marketplace:
+              "eyJtYXJrZXRwbGFjZSI6ImFsbCIsInNob3BfaWQiOm51bGx9",
+            data: {
+              barcode_exemption: false,
+              browser_node_id: "1380072031",
+              category: attr.category?.["primary-category"],
+              sub_category: attr.category?.["sub-category"],
+            },
+            user_id: "63329d7f0451c074aa0e15a8",
+            target: {
+              marketplace: "amazon",
+              shopId: "530",
+            },
+            source: {
+              marketplace: "shopify",
+              shopId: "500",
+            },
+          });
+
           // debugger;
           console.log("get attrs");
           console.log(response);
@@ -88,34 +81,37 @@ function Home() {
           }
 
           // debugger;
-
           setAttrOptions([..._attrOptions]);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error(error);
-        })
-        .finally(() => {
+          alert(error);
+        } finally {
           setIsLoading(false);
-        });
-    }
+        }
+      }
+    })();
   }, [showAttrs]);
 
   useEffect(() => {
-    if (selected.length > 0) {
-      setIsLoading(true);
-      _post("getAllCategory", {
-        target_marketplace: "eyJtYXJrZXRwbGFjZSI6ImFsbCIsInNob3BfaWQiOm51bGx9",
-        selected: productData[selected[selected.length - 1]].parent_id,
-        user_id: "63329d7f0451c074aa0e15a8",
-        target: {
-          marketplace: "amazon",
-          shopId: "530",
-        },
-      })
-        .then((response) => {
-          console.log(response);
+    (async () => {
+      if (selected.length > 0) {
+        debugger;
+        if (productData[selected[selected.length - 1]]?.hasChildren) {
+          try {
+            setIsLoading(true);
+            const response = await _post("getAllCategory", {
+              target_marketplace:
+                "eyJtYXJrZXRwbGFjZSI6ImFsbCIsInNob3BfaWQiOm51bGx9",
+              selected: productData[selected[selected.length - 1]].parent_id,
+              user_id: "63329d7f0451c074aa0e15a8",
+              target: {
+                marketplace: "amazon",
+                shopId: "530",
+              },
+            });
+            // .then((response) => {
+            console.log(response);
 
-          if (response.data.length > 0) {
             const _options = [
               { label: "Select ...", value: "", disabled: true },
             ];
@@ -132,37 +128,42 @@ function Home() {
               _productData[element.browseNodeId] = {
                 parent_id: element.parent_id,
                 category: element.category,
+                hasChildren: element.hasChildren,
               };
             });
             // debugger;
             // setHasChildren(response.hasChildren);
             setProductData({ ..._productData });
             setOptions([...options, _options]);
-          } else {
-            setShowAttrs(true);
+          } catch (error) {
+            console.log(error);
+            alert(error);
+          } finally {
+            setIsLoading(false);
           }
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
+        } else {
+          setShowAttrs(true);
+        }
+      }
+    })();
   }, [selected]);
 
   useEffect(() => {
-    setIsLoading(true);
-    _post("getAllCategory", {
-      target_marketplace: "eyJtYXJrZXRwbGFjZSI6ImFsbCIsInNob3BfaWQiOm51bGx9",
-      selected: [],
-      user_id: "63329d7f0451c074aa0e15a8",
-      target: {
-        marketplace: "amazon",
-        shopId: "530",
-      },
-    })
-      .then((response) => {
+    (async () => {
+      setIsLoading(true);
+
+      try {
+        const response = await _post("getAllCategory", {
+          target_marketplace:
+            "eyJtYXJrZXRwbGFjZSI6ImFsbCIsInNob3BfaWQiOm51bGx9",
+          selected: [],
+          user_id: "63329d7f0451c074aa0e15a8",
+          target: {
+            marketplace: "amazon",
+            shopId: "530",
+          },
+        });
+
         console.log(response);
         const _options = [{ label: "Select ...", value: "", disabled: true }];
         const _productData = productData;
@@ -176,27 +177,25 @@ function Home() {
           _productData[element.browseNodeId] = {
             parent_id: element.parent_id,
             category: element.category,
+            hasChildren: element.hasChildren,
           };
         });
+
         // debugger;
         setProductData({ ..._productData });
         setOptions([...options, _options]);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.log(error);
-      })
-      .finally(() => {
+        alert(error);
+      } finally {
         setIsLoading(false);
-      });
+      }
+    })();
   }, []);
 
   function createAttrs(idx) {
-    debugger;
+    // debugger;
     const optionsCopy = JSON.parse(JSON.stringify(attrOptions));
-
-    // 0
-    // 1 - 0
-    // 2 - 0, 1
 
     optionsCopy.map((item) => {
       if (selectedAttrs.includes(item.value)) {
@@ -265,7 +264,7 @@ function Home() {
                   // label="Date range"
                   options={options[idx]}
                   onChange={(value) => {
-                    debugger;
+                    // debugger;
 
                     if (idx < selected.length) {
                       setShowAttrs(false);
@@ -310,7 +309,7 @@ function Home() {
                               plain
                               textAlign="right"
                               onClick={(event) => {
-                                debugger;
+                                // debugger;
                                 console.log(event, idx);
                                 selectedAttrs.splice(idx, 1);
                                 setSelectedAttrs([...selectedAttrs]);
